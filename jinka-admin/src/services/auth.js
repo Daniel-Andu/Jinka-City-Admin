@@ -2,12 +2,12 @@ import api from './api';
 
 // Authentication service
 export const authService = {
-    // Login
+    // Admin Login (uses public endpoint)
     login: async (email, password) => {
-        const response = await api.post('/auth/login', { email, password });
-        if (response.success && response.data.token) {
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('user', JSON.stringify(response.data.user));
+        const response = await api.post('/public/login', { email, password });
+        if (response.token) {
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
         }
         return response;
     },

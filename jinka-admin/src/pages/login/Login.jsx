@@ -1,19 +1,39 @@
-import React from "react";
-import { Form, Input, Button, Card, Typography, Space } from "antd";
+import { useState } from "react";
+import { Form, Input, Button, Card, Typography, Space, message } from "antd";
 import { UserOutlined, LockOutlined, BankOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { authService } from "../../services";
 import "./style.css";
 
 const { Title, Text } = Typography;
 
 export const LoginPage = () => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
-    const onFinish = (values) => {
-        console.log("Login:", values);
-        // Here you would normally call your API
-        // For now, just navigate to dashboard
-        navigate("/");
+    const onFinish = async (values) => {
+        setLoading(true);
+        try {
+            console.log('Attempting login with:', values.email);
+            const response = await authService.login(values.email, values.password);
+            console.log('Login response:', response);
+
+            if (response && response.token) {
+                message.success('Login successful!');
+                setTimeout(() => {
+                    navigate("/");
+                }, 100);
+            } else {
+                console.error('No token in response:', response);
+                message.error('Invalid response from server');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            const errorMsg = error.response?.data?.error || error.message || 'Login failed';
+            message.error(errorMsg);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -78,7 +98,7 @@ export const LoginPage = () => {
                         </Form.Item>
 
                         <Form.Item>
-                            <Button type="primary" htmlType="submit" block>
+                            <Button type="primary" htmlType="submit" block loading={loading}>
                                 Sign In
                             </Button>
                         </Form.Item>

@@ -1,17 +1,96 @@
-import React from "react";
-import { Table, Space, Button, Tag, Input, Card, Avatar } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Space, Button, Tag, Input, Card, Avatar, message, Modal, Form, Select, Spin } from "antd";
 import {
     EditOutlined,
     DeleteOutlined,
     SearchOutlined,
     PlusOutlined,
     BankOutlined,
+    ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { departmentService } from "../../services";
+
+const { confirm } = Modal;
 
 export const DepartmentList = () => {
-    const navigate = useNavigate();
-    const [searchText, setSearchText] = React.useState("");
+    const [searchText, setSearchText] = useState("");
+    const [departments, setDepartments] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingDepartment, setEditingDepartment] = useState(null);
+    const [form] = Form.useForm();
+
+    // Fetch departments from backend
+    const fetchDepartments = async () => {
+        setLoading(true);
+        try {
+            const response = await departmentService.getAll();
+            console.log('Departments from backend:', response);
+            setDepartments(response.data || response || []);
+            message.success('Departments loaded from database');
+        } catch (error) {
+            console.error('Error fetching departments:', error);
+            message.error('Failed to load departments from backend');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDepartments();
+    }, []);
+
+    // Delete department
+    const handleDelete = (record) => {
+        confirm({
+            title: 'Are you sure you want to delete this department?',
+            icon: <ExclamationCircleOutlined />,
+            content: `Department: ${record.name || record.title}`,
+            okText: 'Yes, Delete',
+            okType: 'danger',
+            cancelText: 'Cancel',
+            async onOk() {
+                try {
+                    await departmentService.delete(record.id);
+                    message.success('Department deleted successfully');
+                    fetchDepartments();
+                } catch (error) {
+                    console.error('Error deleting department:', error);
+                    message.error('Failed to delete department');
+                }
+            },
+        });
+    };
+
+    // Open modal for create/edit
+    const openModal = (department = null) => {
+        setEditingDepartment(department);
+        if (department) {
+            form.setFieldsValue(department);
+        } else {
+            form.resetFields();
+        }
+        setIsModalOpen(true);
+    };
+
+    // Handle form submit
+    const handleSubmit = async (values) => {
+        try {
+            if (editingDepartment) {
+                await departmentService.update(editingDepartment.id, values);
+                message.success('Department updated successfully');
+            } else {
+                await departmentService.create(values);
+                message.success('Department created successfully');
+            }
+            setIsModalOpen(false);
+            form.resetFields();
+            fetchDepartments();
+        } catch (error) {
+            console.error('Error saving department:', error);
+            message.error('Failed to save department');
+        }
+    };
 
     const columns = [
         {
@@ -20,20 +99,16 @@ export const DepartmentList = () => {
             key: "name",
             render: (text, record) => (
                 <Space>
-                    <Avatar icon={<BankOutlined />} style={{ backgroundColor: record.color }} />
-                    <span>{text}</span>
+                    <Avatar icon={<BankOutlined />} style={{ backgroundColor: record.color || '#1e5a8e' }} />
+                    <span>{text || record.title}</span>
                 </Space>
             ),
         },
         {
-            title: "Head",
-            dataIndex: "head",
-            key: "head",
-        },
-        {
-            title: "Employees",
-            dataIndex: "employees",
-            key: "employees",
+            title: "Description",
+            dataIndex: "description",
+            key: "description",
+            ellipsis: true,
         },
         {
             title: "Contact",
@@ -45,8 +120,8 @@ export const DepartmentList = () => {
             dataIndex: "status",
             key: "status",
             render: (status) => (
-                <Tag color={status === "Operational" ? "green" : "orange"}>
-                    {status}
+                <Tag color={status === "active" || status === "Operational" ? "green" : "orange"}>
+                    {status || "Active"}
                 </Tag>
             ),
         },
@@ -58,63 +133,32 @@ export const DepartmentList = () => {
                     <Button
                         type="text"
                         icon={<EditOutlined />}
-                        onClick={() => navigate(`/departments/edit/${record.id}`)}
+                        onClick={() => openModal(record)}
                     />
-                    <Button type="text" danger icon={<DeleteOutlined />} />
+                    <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDelete(record)}
+                    />
                 </Space>
             ),
         },
     ];
 
-    const data = [
-        {
-            id: 1,
-            name: "Civil Registry",
-            head: "Ato Mulugeta Bekele",
-            employees: 45,
-            contact: "+251-467-775-1001",
-            status: "Operational",
-            color: "#1e5a8e",
-        },
-        {
-            id: 2,
-            name: "Urban Planning",
-            head: "W/ro Almaz Tadesse",
-            employees: 32,
-            contact: "+251-467-775-1002",
-            status: "Operational",
-            color: "#0d9488",
-        },
-        {
-            id: 3,
-            name: "Health Services",
-            head: "Dr. Yohannes Girma",
-            employees: 67,
-            contact: "+251-467-775-1003",
-            status: "Operational",
-            color: "#f59e0b",
-        },
-        {
-            id: 4,
-            name: "Finance",
-            head: "Ato Tesfaye Wolde",
-            employees: 28,
-            contact: "+251-467-775-1004",
-            status: "Operational",
-            color: "#dc2626",
-        },
-    ];
-
-    const filteredData = data.filter(item =>
-        item.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.head.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.contact.includes(searchText)
+    const filteredData = departments.filter(item =>
+        (item.name || item.title || '').toLowerCase().includes(searchText.toLowerCase()) ||
+        (item.description || '').toLowerCase().includes(searchText.toLowerCase()) ||
+        (item.contact || '').includes(searchText)
     );
 
     return (
         <div>
             <div className="page-header">
                 <h1>Departments</h1>
+                <p style={{ color: '#666', marginTop: 8 }}>
+                    {loading ? 'Loading...' : `Connected to backend database (${departments.length} departments)`}
+                </p>
             </div>
 
             <Card bordered={false} style={{ borderRadius: 12 }}>
@@ -130,7 +174,7 @@ export const DepartmentList = () => {
                     <Button
                         type="primary"
                         icon={<PlusOutlined />}
-                        onClick={() => navigate("/departments/create")}
+                        onClick={() => openModal()}
                     >
                         Add Department
                     </Button>
@@ -140,12 +184,76 @@ export const DepartmentList = () => {
                     columns={columns}
                     dataSource={filteredData}
                     rowKey="id"
+                    loading={loading}
                     pagination={{
                         pageSize: 10,
                         showTotal: (total) => `Total ${total} departments`,
                     }}
                 />
             </Card>
+
+            <Modal
+                title={editingDepartment ? "Edit Department" : "Create Department"}
+                open={isModalOpen}
+                onCancel={() => {
+                    setIsModalOpen(false);
+                    form.resetFields();
+                }}
+                footer={null}
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={handleSubmit}
+                >
+                    <Form.Item
+                        name="name"
+                        label="Department Name"
+                        rules={[{ required: true, message: 'Please enter department name' }]}
+                    >
+                        <Input placeholder="e.g., Civil Registry" />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="description"
+                        label="Description"
+                    >
+                        <Input.TextArea rows={3} placeholder="Department description" />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="contact"
+                        label="Contact"
+                    >
+                        <Input placeholder="Phone or email" />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="status"
+                        label="Status"
+                        initialValue="active"
+                    >
+                        <Select>
+                            <Select.Option value="active">Active</Select.Option>
+                            <Select.Option value="inactive">Inactive</Select.Option>
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item>
+                        <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+                            <Button onClick={() => {
+                                setIsModalOpen(false);
+                                form.resetFields();
+                            }}>
+                                Cancel
+                            </Button>
+                            <Button type="primary" htmlType="submit">
+                                {editingDepartment ? 'Update' : 'Create'}
+                            </Button>
+                        </Space>
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     );
 };

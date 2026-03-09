@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import { List, Avatar, Badge, Card, Input, Modal, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { List, Avatar, Badge, Card, Input, Modal, Typography, message as antMessage, Spin, Button, Space, Popconfirm } from "antd";
 import {
     UserOutlined,
     SearchOutlined,
     CloseOutlined,
+    DeleteOutlined,
 } from "@ant-design/icons";
+import { messageService } from "../../services";
 
 const { Text, Title } = Typography;
 
@@ -12,50 +14,45 @@ export const MessageList = () => {
     const [searchText, setSearchText] = useState("");
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    const messages = [
-        {
-            id: 1,
-            sender: "Abebe Kebede",
-            subject: "Building Permit Inquiry",
-            preview: "I would like to inquire about the status of my building permit application...",
-            fullMessage: "Dear Admin,\n\nI would like to inquire about the status of my building permit application submitted on February 15, 2026. The application reference number is BP-2026-0234.\n\nI have completed all the required documentation and paid the necessary fees. Could you please provide an update on when I can expect the permit to be approved?\n\nThank you for your assistance.\n\nBest regards,\nAbebe Kebede",
-            time: "10 minutes ago",
-            unread: true,
-        },
-        {
-            id: 2,
-            sender: "Tigist Haile",
-            subject: "Health Certificate Request",
-            preview: "Could you please provide information about obtaining a health certificate...",
-            fullMessage: "Hello,\n\nCould you please provide information about obtaining a health certificate for my restaurant business? I need to know:\n\n1. Required documents\n2. Processing time\n3. Fees involved\n4. Where to submit the application\n\nI would appreciate a prompt response as I need to complete this process soon.\n\nThank you,\nTigist Haile",
-            time: "1 hour ago",
-            unread: true,
-        },
-        {
-            id: 3,
-            sender: "Dawit Tesfaye",
-            subject: "Tax Payment Confirmation",
-            preview: "I have completed my tax payment and would like to receive confirmation...",
-            fullMessage: "Dear Tax Department,\n\nI have completed my annual business tax payment on March 5, 2026. The transaction reference is TX-2026-5678.\n\nPlease send me an official confirmation receipt for my records.\n\nThank you,\nDawit Tesfaye",
-            time: "3 hours ago",
-            unread: false,
-        },
-        {
-            id: 4,
-            sender: "Almaz Tadesse",
-            subject: "Event Registration",
-            preview: "I am interested in registering for the upcoming city council meeting...",
-            fullMessage: "Good day,\n\nI am interested in registering for the upcoming city council meeting scheduled for March 15, 2026. As a local business owner, I would like to participate in the discussion about the new business development zones.\n\nPlease let me know the registration process.\n\nRegards,\nAlmaz Tadesse",
-            time: "Yesterday",
-            unread: false,
-        },
-    ];
+    // Fetch messages from backend
+    const fetchMessages = async () => {
+        setLoading(true);
+        try {
+            const response = await messageService.getAll();
+            console.log('Messages from backend:', response);
+            setMessages(response.data || response || []);
+            antMessage.success('Messages loaded from database');
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+            antMessage.error('Failed to load messages from backend');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMessages();
+    }, []);
+
+    // Delete message
+    const handleDelete = async (id) => {
+        try {
+            await messageService.delete(id);
+            antMessage.success('Message deleted successfully');
+            fetchMessages();
+        } catch (error) {
+            console.error('Error deleting message:', error);
+            antMessage.error('Failed to delete message');
+        }
+    };
 
     const filteredMessages = messages.filter(msg =>
-        msg.sender.toLowerCase().includes(searchText.toLowerCase()) ||
-        msg.subject.toLowerCase().includes(searchText.toLowerCase()) ||
-        msg.preview.toLowerCase().includes(searchText.toLowerCase())
+        (msg.name || msg.sender || '').toLowerCase().includes(searchText.toLowerCase()) ||
+        (msg.subject || '').toLowerCase().includes(searchText.toLowerCase()) ||
+        (msg.message || msg.preview || '').toLowerCase().includes(searchText.toLowerCase())
     );
 
     const handleMessageClick = (message) => {
@@ -72,6 +69,9 @@ export const MessageList = () => {
         <div>
             <div className="page-header">
                 <h1>Messages</h1>
+                <p style={{ color: '#666', marginTop: 8 }}>
+                    {loading ? 'Loading...' : `Connected to backend database (${messages.length} messages)`}
+                </p>
             </div>
 
             <Card bordered={false} style={{ borderRadius: 12 }}>

@@ -9,6 +9,7 @@ import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
 import { ConfigProvider, App as AntdApp } from "antd";
 
 import { ThemedLayoutV2 } from "./components/layout";
+import { ConnectionStatus } from "./components/ConnectionStatus";
 import { Dashboard } from "./pages/dashboard";
 import { DepartmentList, DepartmentCreate, DepartmentEdit } from "./pages/departments";
 import { AnnouncementList, AnnouncementCreate, AnnouncementEdit } from "./pages/announcements";
@@ -38,6 +39,7 @@ function App() {
             >
                 <RefineKbarProvider>
                     <AntdApp>
+                        <ConnectionStatus />
                         <Refine
                             dataProvider={dataProvider(API_URL)}
                             routerProvider={routerBindings}

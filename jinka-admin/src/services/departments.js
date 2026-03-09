@@ -4,31 +4,31 @@ import api from './api';
 export const departmentService = {
     // Get all departments
     getAll: async (params = {}) => {
-        const response = await api.get('/departments', { params });
+        const response = await api.get('/admin/departments', { params });
         return response;
     },
 
     // Get single department
     getOne: async (id) => {
-        const response = await api.get(`/departments/${id}`);
+        const response = await api.get(`/admin/departments/${id}`);
         return response;
     },
 
     // Create department
     create: async (data) => {
-        const response = await api.post('/departments', data);
+        const response = await api.post('/admin/departments', data);
         return response;
     },
 
     // Update department
     update: async (id, data) => {
-        const response = await api.put(`/departments/${id}`, data);
+        const response = await api.put(`/admin/departments/${id}`, data);
         return response;
     },
 
     // Delete department
     delete: async (id) => {
-        const response = await api.delete(`/departments/${id}`);
+        const response = await api.delete(`/admin/departments/${id}`);
         return response;
     },
 };
