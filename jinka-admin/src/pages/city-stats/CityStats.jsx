@@ -1,79 +1,74 @@
-import React, { useState, useEffect } from "react";
-import { Table, Space, Button, Tag, Input, Card, Avatar, message, Modal, Form, Select, Spin } from "antd";
+import { useState, useEffect } from "react";
+import { Table, Space, Button, Tag, Input, Card, message, Modal, Form, Switch, InputNumber } from "antd";
 import {
     EditOutlined,
     DeleteOutlined,
     SearchOutlined,
     PlusOutlined,
-    BankOutlined,
     ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { departmentService } from "../../services";
+import { cityStatsService } from "../../services";
 
 const { confirm } = Modal;
 
-export const DepartmentList = () => {
+export const CityStatsList = () => {
     const [searchText, setSearchText] = useState("");
-    const [departments, setDepartments] = useState([]);
+    const [stats, setStats] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingDepartment, setEditingDepartment] = useState(null);
+    const [editingStat, setEditingStat] = useState(null);
     const [form] = Form.useForm();
 
-    // Fetch departments from backend
-    const fetchDepartments = async () => {
+    const fetchStats = async () => {
         setLoading(true);
         try {
-            const response = await departmentService.getAll();
-            console.log('Departments from backend:', response);
-            setDepartments(response.data || response || []);
-            message.success('Departments loaded from database');
+            const response = await cityStatsService.getAll();
+            console.log('City stats from backend:', response);
+            setStats(response.data || response || []);
+            message.success('City stats loaded from database');
         } catch (error) {
-            console.error('Error fetching departments:', error);
-            message.error('Failed to load departments from backend');
+            console.error('Error fetching city stats:', error);
+            message.error('Failed to load city stats');
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchDepartments();
+        fetchStats();
     }, []);
 
-    // Delete department
     const handleDelete = (record) => {
         confirm({
-            title: 'Are you sure you want to delete this department?',
+            title: 'Are you sure you want to delete this city stat?',
             icon: <ExclamationCircleOutlined />,
-            content: `Department: ${record.name || record.title}`,
+            content: `Stat: ${record.stat_key}`,
             okText: 'Yes, Delete',
             okType: 'danger',
             cancelText: 'Cancel',
             async onOk() {
                 try {
-                    await departmentService.delete(record.id);
-                    message.success('Department deleted successfully');
-                    fetchDepartments();
+                    await cityStatsService.delete(record.id);
+                    message.success('City stat deleted successfully');
+                    fetchStats();
                 } catch (error) {
-                    console.error('Error deleting department:', error);
-                    message.error('Failed to delete department');
+                    console.error('Error deleting city stat:', error);
+                    message.error('Failed to delete city stat');
                 }
             },
         });
     };
 
-    // Open modal for create/edit
-    const openModal = (department = null) => {
-        setEditingDepartment(department);
-        if (department) {
-            form.setFieldsValue(department);
+    const openModal = (stat = null) => {
+        setEditingStat(stat);
+        if (stat) {
+            form.setFieldsValue(stat);
         } else {
             form.resetFields();
         }
         setIsModalOpen(true);
     };
 
-    // Handle form submit
     const handleSubmit = async (values) => {
         try {
             // Convert boolean to number for MySQL
@@ -82,39 +77,39 @@ export const DepartmentList = () => {
                 is_active: values.is_active ? 1 : 0
             };
 
-            if (editingDepartment) {
-                await departmentService.update(editingDepartment.id, data);
-                message.success('Department updated successfully');
+            if (editingStat) {
+                await cityStatsService.update(editingStat.id, data);
+                message.success('City stat updated successfully');
             } else {
-                await departmentService.create(data);
-                message.success('Department created successfully');
+                await cityStatsService.create(data);
+                message.success('City stat created successfully');
             }
             setIsModalOpen(false);
             form.resetFields();
-            fetchDepartments();
+            fetchStats();
         } catch (error) {
-            console.error('Error saving department:', error);
-            message.error('Failed to save department');
+            console.error('Error saving city stat:', error);
+            message.error('Failed to save city stat');
         }
     };
 
     const columns = [
         {
-            title: "Department",
-            dataIndex: "name",
-            key: "name",
-            render: (text, record) => (
-                <Space>
-                    <Avatar icon={<BankOutlined />} style={{ backgroundColor: record.color || '#1e5a8e' }} />
-                    <span>{text || record.title}</span>
-                </Space>
-            ),
+            title: "Order",
+            dataIndex: "order_number",
+            key: "order_number",
+            width: 80,
+            sorter: (a, b) => a.order_number - b.order_number,
         },
         {
-            title: "Description",
-            dataIndex: "description",
-            key: "description",
-            ellipsis: true,
+            title: "Key",
+            dataIndex: "stat_key",
+            key: "stat_key",
+        },
+        {
+            title: "Value",
+            dataIndex: "value",
+            key: "value",
         },
         {
             title: "Icon",
@@ -152,24 +147,24 @@ export const DepartmentList = () => {
         },
     ];
 
-    const filteredData = departments.filter(item =>
-        (item.name || item.title || '').toLowerCase().includes(searchText.toLowerCase()) ||
-        (item.description || '').toLowerCase().includes(searchText.toLowerCase())
+    const filteredData = stats.filter(item =>
+        (item.stat_key || '').toLowerCase().includes(searchText.toLowerCase()) ||
+        (item.value || '').toLowerCase().includes(searchText.toLowerCase())
     );
 
     return (
         <div>
             <div className="page-header">
-                <h1>Departments</h1>
+                <h1>City Statistics</h1>
                 <p style={{ color: '#666', marginTop: 8 }}>
-                    {loading ? 'Loading...' : `Connected to backend database (${departments.length} departments)`}
+                    {loading ? 'Loading...' : `Manage homepage city statistics (${stats.length} stats)`}
                 </p>
             </div>
 
-            <Card bordered={false} style={{ borderRadius: 12 }}>
+            <Card style={{ borderRadius: 12 }}>
                 <Space style={{ marginBottom: 16, width: "100%", justifyContent: "space-between" }}>
                     <Input
-                        placeholder="Search departments..."
+                        placeholder="Search stats..."
                         prefix={<SearchOutlined />}
                         style={{ width: 300 }}
                         value={searchText}
@@ -181,7 +176,7 @@ export const DepartmentList = () => {
                         icon={<PlusOutlined />}
                         onClick={() => openModal()}
                     >
-                        Add Department
+                        Add City Stat
                     </Button>
                 </Space>
 
@@ -192,57 +187,63 @@ export const DepartmentList = () => {
                     loading={loading}
                     pagination={{
                         pageSize: 10,
-                        showTotal: (total) => `Total ${total} departments`,
+                        showTotal: (total) => `Total ${total} stats`,
                     }}
                 />
             </Card>
 
             <Modal
-                title={editingDepartment ? "Edit Department" : "Create Department"}
+                title={editingStat ? "Edit City Stat" : "Create City Stat"}
                 open={isModalOpen}
                 onCancel={() => {
                     setIsModalOpen(false);
                     form.resetFields();
                 }}
                 footer={null}
+                width={600}
             >
                 <Form
                     form={form}
                     layout="vertical"
                     onFinish={handleSubmit}
-                    initialValues={{ is_active: true }}
+                    initialValues={{ is_active: true, order_number: 0 }}
                 >
                     <Form.Item
-                        name="name"
-                        label="Department Name"
-                        rules={[{ required: true, message: 'Please enter department name' }]}
+                        name="stat_key"
+                        label="Stat Key"
+                        rules={[{ required: true, message: 'Please enter stat key' }]}
                     >
-                        <Input placeholder="e.g., Civil Registry" />
+                        <Input placeholder="e.g., population, area, departments" />
                     </Form.Item>
 
                     <Form.Item
-                        name="description"
-                        label="Description"
+                        name="value"
+                        label="Value"
+                        rules={[{ required: true, message: 'Please enter value' }]}
                     >
-                        <Input.TextArea rows={3} placeholder="Department description" />
+                        <Input placeholder="e.g., 195,000+, 250 km²" />
                     </Form.Item>
 
                     <Form.Item
                         name="icon"
                         label="Icon"
                     >
-                        <Input placeholder="Icon name (e.g., BankOutlined)" />
+                        <Input placeholder="Icon name (e.g., UserOutlined)" />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="order_number"
+                        label="Display Order"
+                    >
+                        <InputNumber min={0} style={{ width: '100%' }} />
                     </Form.Item>
 
                     <Form.Item
                         name="is_active"
-                        label="Status"
+                        label="Active"
                         valuePropName="checked"
                     >
-                        <Select>
-                            <Select.Option value={true}>Active</Select.Option>
-                            <Select.Option value={false}>Inactive</Select.Option>
-                        </Select>
+                        <Switch />
                     </Form.Item>
 
                     <Form.Item>
@@ -254,38 +255,12 @@ export const DepartmentList = () => {
                                 Cancel
                             </Button>
                             <Button type="primary" htmlType="submit">
-                                {editingDepartment ? 'Update' : 'Create'}
+                                {editingStat ? 'Update' : 'Create'}
                             </Button>
                         </Space>
                     </Form.Item>
                 </Form>
             </Modal>
-        </div>
-    );
-};
-
-export const DepartmentCreate = () => {
-    return (
-        <div>
-            <div className="page-header">
-                <h1>Create New Department</h1>
-            </div>
-            <Card bordered={false} style={{ borderRadius: 12 }}>
-                <p>Department creation form will be connected to your API</p>
-            </Card>
-        </div>
-    );
-};
-
-export const DepartmentEdit = () => {
-    return (
-        <div>
-            <div className="page-header">
-                <h1>Edit Department</h1>
-            </div>
-            <Card bordered={false} style={{ borderRadius: 12 }}>
-                <p>Department edit form will be connected to your API</p>
-            </Card>
         </div>
     );
 };

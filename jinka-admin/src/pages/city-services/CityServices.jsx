@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Table, Space, Button, Tag, Input, Card, message, Modal, Form, DatePicker, Switch } from "antd";
+import { Table, Space, Button, Tag, Input, Card, message, Modal, Form, Switch } from "antd";
 import {
     EditOutlined,
     DeleteOutlined,
@@ -7,98 +7,89 @@ import {
     PlusOutlined,
     ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { announcementService } from "../../services";
-import dayjs from 'dayjs';
+import { servicesService } from "../../services";
 
 const { confirm } = Modal;
-const { TextArea } = Input;
 
-export const AnnouncementList = () => {
+export const CityServicesList = () => {
     const [searchText, setSearchText] = useState("");
-    const [announcements, setAnnouncements] = useState([]);
+    const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+    const [editingService, setEditingService] = useState(null);
     const [form] = Form.useForm();
 
-    // Fetch announcements from backend
-    const fetchAnnouncements = async () => {
+    const fetchServices = async () => {
         setLoading(true);
         try {
-            const response = await announcementService.getAll();
-            console.log('Announcements from backend:', response);
-            setAnnouncements(response.data || response || []);
-            message.success('Announcements loaded from database');
+            const response = await servicesService.getAll();
+            console.log('City services from backend:', response);
+            setServices(response.data || response || []);
+            message.success('City services loaded from database');
         } catch (error) {
-            console.error('Error fetching announcements:', error);
-            message.error('Failed to load announcements');
+            console.error('Error fetching city services:', error);
+            message.error('Failed to load city services');
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchAnnouncements();
+        fetchServices();
     }, []);
 
-    // Delete announcement
     const handleDelete = (record) => {
         confirm({
-            title: 'Are you sure you want to delete this announcement?',
+            title: 'Are you sure you want to delete this service?',
             icon: <ExclamationCircleOutlined />,
-            content: `Announcement: ${record.title}`,
+            content: `Service: ${record.title}`,
             okText: 'Yes, Delete',
             okType: 'danger',
             cancelText: 'Cancel',
             async onOk() {
                 try {
-                    await announcementService.delete(record.id);
-                    message.success('Announcement deleted successfully');
-                    fetchAnnouncements();
+                    await servicesService.delete(record.id);
+                    message.success('Service deleted successfully');
+                    fetchServices();
                 } catch (error) {
-                    console.error('Error deleting announcement:', error);
-                    message.error('Failed to delete announcement');
+                    console.error('Error deleting service:', error);
+                    message.error('Failed to delete service');
                 }
             },
         });
     };
 
-    // Open modal for create/edit
-    const openModal = (announcement = null) => {
-        setEditingAnnouncement(announcement);
-        if (announcement) {
-            form.setFieldsValue({
-                ...announcement,
-                published_at: announcement.published_at ? dayjs(announcement.published_at) : null,
-            });
+    const openModal = (service = null) => {
+        setEditingService(service);
+        if (service) {
+            form.setFieldsValue(service);
         } else {
             form.resetFields();
         }
         setIsModalOpen(true);
     };
 
-    // Handle form submit
     const handleSubmit = async (values) => {
         try {
+            // Convert boolean to number for MySQL
             const data = {
                 ...values,
-                published_at: values.published_at ? values.published_at.format('YYYY-MM-DD HH:mm:ss') : null,
-                is_active: values.is_active ? 1 : 0, // Convert boolean to number for MySQL
+                is_active: values.is_active ? 1 : 0
             };
 
-            if (editingAnnouncement) {
-                await announcementService.update(editingAnnouncement.id, data);
-                message.success('Announcement updated successfully');
+            if (editingService) {
+                await servicesService.update(editingService.id, data);
+                message.success('Service updated successfully');
             } else {
-                await announcementService.create(data);
-                message.success('Announcement created successfully');
+                await servicesService.create(data);
+                message.success('Service created successfully');
             }
             setIsModalOpen(false);
             form.resetFields();
-            fetchAnnouncements();
+            fetchServices();
         } catch (error) {
-            console.error('Error saving announcement:', error);
-            message.error('Failed to save announcement');
+            console.error('Error saving service:', error);
+            message.error('Failed to save service');
         }
     };
 
@@ -109,10 +100,21 @@ export const AnnouncementList = () => {
             key: "title",
         },
         {
-            title: "Published Date",
-            dataIndex: "published_at",
-            key: "published_at",
-            render: (date) => date ? dayjs(date).format('YYYY-MM-DD HH:mm') : '-',
+            title: "Description",
+            dataIndex: "description",
+            key: "description",
+            ellipsis: true,
+        },
+        {
+            title: "Icon",
+            dataIndex: "icon",
+            key: "icon",
+        },
+        {
+            title: "Link",
+            dataIndex: "link",
+            key: "link",
+            ellipsis: true,
         },
         {
             title: "Status",
@@ -145,24 +147,24 @@ export const AnnouncementList = () => {
         },
     ];
 
-    const filteredData = announcements.filter(item =>
+    const filteredData = services.filter(item =>
         (item.title || '').toLowerCase().includes(searchText.toLowerCase()) ||
-        (item.content || '').toLowerCase().includes(searchText.toLowerCase())
+        (item.description || '').toLowerCase().includes(searchText.toLowerCase())
     );
 
     return (
         <div>
             <div className="page-header">
-                <h1>Announcements</h1>
+                <h1>City Services</h1>
                 <p style={{ color: '#666', marginTop: 8 }}>
-                    {loading ? 'Loading...' : `Connected to backend database (${announcements.length} announcements)`}
+                    {loading ? 'Loading...' : `Manage city services (${services.length} services)`}
                 </p>
             </div>
 
-            <Card bordered={false} style={{ borderRadius: 12 }}>
+            <Card style={{ borderRadius: 12 }}>
                 <Space style={{ marginBottom: 16, width: "100%", justifyContent: "space-between" }}>
                     <Input
-                        placeholder="Search announcements..."
+                        placeholder="Search services..."
                         prefix={<SearchOutlined />}
                         style={{ width: 300 }}
                         value={searchText}
@@ -174,7 +176,7 @@ export const AnnouncementList = () => {
                         icon={<PlusOutlined />}
                         onClick={() => openModal()}
                     >
-                        Add Announcement
+                        Add Service
                     </Button>
                 </Space>
 
@@ -185,13 +187,13 @@ export const AnnouncementList = () => {
                     loading={loading}
                     pagination={{
                         pageSize: 10,
-                        showTotal: (total) => `Total ${total} announcements`,
+                        showTotal: (total) => `Total ${total} services`,
                     }}
                 />
             </Card>
 
             <Modal
-                title={editingAnnouncement ? "Edit Announcement" : "Create Announcement"}
+                title={editingService ? "Edit Service" : "Create Service"}
                 open={isModalOpen}
                 onCancel={() => {
                     setIsModalOpen(false);
@@ -208,32 +210,32 @@ export const AnnouncementList = () => {
                 >
                     <Form.Item
                         name="title"
-                        label="Title"
-                        rules={[{ required: true, message: 'Please enter title' }]}
+                        label="Service Title"
+                        rules={[{ required: true, message: 'Please enter service title' }]}
                     >
-                        <Input placeholder="Announcement title" />
+                        <Input placeholder="e.g., Birth Certificate" />
                     </Form.Item>
 
                     <Form.Item
-                        name="content"
-                        label="Content"
-                        rules={[{ required: true, message: 'Please enter content' }]}
+                        name="description"
+                        label="Description"
+                        rules={[{ required: true, message: 'Please enter description' }]}
                     >
-                        <TextArea rows={6} placeholder="Announcement content" />
+                        <Input.TextArea rows={3} placeholder="Service description" />
                     </Form.Item>
 
                     <Form.Item
-                        name="featured_image"
-                        label="Featured Image URL"
+                        name="icon"
+                        label="Icon"
                     >
-                        <Input placeholder="https://example.com/image.jpg" />
+                        <Input placeholder="Icon name (e.g., FileTextOutlined)" />
                     </Form.Item>
 
                     <Form.Item
-                        name="published_at"
-                        label="Published Date"
+                        name="link"
+                        label="Link"
                     >
-                        <DatePicker showTime style={{ width: '100%' }} />
+                        <Input placeholder="/services/birth-certificate" />
                     </Form.Item>
 
                     <Form.Item
@@ -253,38 +255,12 @@ export const AnnouncementList = () => {
                                 Cancel
                             </Button>
                             <Button type="primary" htmlType="submit">
-                                {editingAnnouncement ? 'Update' : 'Create'}
+                                {editingService ? 'Update' : 'Create'}
                             </Button>
                         </Space>
                     </Form.Item>
                 </Form>
             </Modal>
-        </div>
-    );
-};
-
-export const AnnouncementCreate = () => {
-    return (
-        <div>
-            <div className="page-header">
-                <h1>Create New Announcement</h1>
-            </div>
-            <Card bordered={false} style={{ borderRadius: 12 }}>
-                <p>Use the main Announcements page to create announcements</p>
-            </Card>
-        </div>
-    );
-};
-
-export const AnnouncementEdit = () => {
-    return (
-        <div>
-            <div className="page-header">
-                <h1>Edit Announcement</h1>
-            </div>
-            <Card bordered={false} style={{ borderRadius: 12 }}>
-                <p>Use the main Announcements page to edit announcements</p>
-            </Card>
         </div>
     );
 };

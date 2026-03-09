@@ -20,6 +20,11 @@ import { ReportList } from "./pages/reports";
 import { MessageList } from "./pages/messages";
 import { SettingsPage } from "./pages/settings";
 import { LoginPage } from "./pages/login";
+import { HeroSliderList } from "./pages/hero-sliders";
+import { CityStatsList } from "./pages/city-stats";
+import { CityServicesList } from "./pages/city-services";
+import { LanguagesList } from "./pages/languages";
+import { SubscribersList } from "./pages/subscribers";
 
 import "./App.css";
 
@@ -71,6 +76,27 @@ function App() {
                                     },
                                 },
                                 {
+                                    name: "hero-sliders",
+                                    list: "/hero-sliders",
+                                    meta: {
+                                        label: "Hero Sliders",
+                                    },
+                                },
+                                {
+                                    name: "city-stats",
+                                    list: "/city-stats",
+                                    meta: {
+                                        label: "City Stats",
+                                    },
+                                },
+                                {
+                                    name: "city-services",
+                                    list: "/city-services",
+                                    meta: {
+                                        label: "City Services",
+                                    },
+                                },
+                                {
                                     name: "projects",
                                     list: "/projects",
                                     meta: {
@@ -106,6 +132,20 @@ function App() {
                                     },
                                 },
                                 {
+                                    name: "languages",
+                                    list: "/languages",
+                                    meta: {
+                                        label: "Languages",
+                                    },
+                                },
+                                {
+                                    name: "subscribers",
+                                    list: "/subscribers",
+                                    meta: {
+                                        label: "Subscribers",
+                                    },
+                                },
+                                {
                                     name: "settings",
                                     list: "/settings",
                                     meta: {
@@ -138,11 +178,16 @@ function App() {
                                         <Route path="create" element={<AnnouncementCreate />} />
                                         <Route path="edit/:id" element={<AnnouncementEdit />} />
                                     </Route>
+                                    <Route path="/hero-sliders" element={<HeroSliderList />} />
+                                    <Route path="/city-stats" element={<CityStatsList />} />
+                                    <Route path="/city-services" element={<CityServicesList />} />
                                     <Route path="/projects" element={<ProjectList />} />
                                     <Route path="/events" element={<EventList />} />
                                     <Route path="/documents" element={<DocumentList />} />
                                     <Route path="/reports" element={<ReportList />} />
                                     <Route path="/messages" element={<MessageList />} />
+                                    <Route path="/languages" element={<LanguagesList />} />
+                                    <Route path="/subscribers" element={<SubscribersList />} />
                                     <Route path="/settings" element={<SettingsPage />} />
                                 </Route>
                             </Routes>

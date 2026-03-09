@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { List, Avatar, Badge, Card, Input, Modal, Typography, message as antMessage, Spin, Button, Space, Popconfirm } from "antd";
+import { useState, useEffect } from "react";
+import { List, Avatar, Card, Input, Modal, Typography, message as antMessage, Spin, Button, Space, Popconfirm } from "antd";
 import {
     UserOutlined,
     SearchOutlined,
@@ -50,9 +50,10 @@ export const MessageList = () => {
     };
 
     const filteredMessages = messages.filter(msg =>
-        (msg.name || msg.sender || '').toLowerCase().includes(searchText.toLowerCase()) ||
+        (msg.name || '').toLowerCase().includes(searchText.toLowerCase()) ||
+        (msg.email || '').toLowerCase().includes(searchText.toLowerCase()) ||
         (msg.subject || '').toLowerCase().includes(searchText.toLowerCase()) ||
-        (msg.message || msg.preview || '').toLowerCase().includes(searchText.toLowerCase())
+        (msg.message || '').toLowerCase().includes(searchText.toLowerCase())
     );
 
     const handleMessageClick = (message) => {
@@ -65,16 +66,31 @@ export const MessageList = () => {
         setSelectedMessage(null);
     };
 
+    // Format date for display
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
     return (
         <div>
             <div className="page-header">
                 <h1>Messages</h1>
                 <p style={{ color: '#666', marginTop: 8 }}>
-                    {loading ? 'Loading...' : `Connected to backend database (${messages.length} messages)`}
+                    {loading ? 'Loading...' : messages.length === 0
+                        ? 'No messages yet. Messages will appear here when customers submit the contact form.'
+                        : `Connected to backend database (${messages.length} messages)`}
                 </p>
             </div>
 
-            <Card bordered={false} style={{ borderRadius: 12 }}>
+            <Card style={{ borderRadius: 12 }}>
                 <Input
                     placeholder="Search messages..."
                     prefix={<SearchOutlined />}
@@ -84,55 +100,108 @@ export const MessageList = () => {
                     allowClear
                 />
 
-                <List
-                    itemLayout="horizontal"
-                    dataSource={filteredMessages}
-                    renderItem={(item) => (
-                        <List.Item
-                            style={{
-                                background: item.unread ? "#f0f9ff" : "white",
-                                padding: "16px",
-                                borderRadius: 8,
-                                marginBottom: 8,
-                                cursor: "pointer",
-                            }}
-                            onClick={() => handleMessageClick(item)}
-                        >
-                            <List.Item.Meta
-                                avatar={
-                                    <Badge dot={item.unread}>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                        <Spin size="large" />
+                    </div>
+                ) : filteredMessages.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+                        No messages found
+                    </div>
+                ) : (
+                    <List
+                        itemLayout="horizontal"
+                        dataSource={filteredMessages}
+                        renderItem={(item) => (
+                            <List.Item
+                                style={{
+                                    background: "white",
+                                    padding: "16px",
+                                    borderRadius: 8,
+                                    marginBottom: 8,
+                                    cursor: "pointer",
+                                    border: "1px solid #f0f0f0",
+                                }}
+                                onClick={() => handleMessageClick(item)}
+                                actions={[
+                                    <Popconfirm
+                                        title="Delete this message?"
+                                        description="This action cannot be undone."
+                                        onConfirm={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(item.id);
+                                        }}
+                                        okText="Yes"
+                                        cancelText="No"
+                                    >
+                                        <Button
+                                            type="text"
+                                            danger
+                                            icon={<DeleteOutlined />}
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                    </Popconfirm>
+                                ]}
+                            >
+                                <List.Item.Meta
+                                    avatar={
                                         <Avatar icon={<UserOutlined />} size={48} />
-                                    </Badge>
-                                }
-                                title={
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                        <span style={{ fontWeight: item.unread ? 600 : 400 }}>
-                                            {item.sender}
-                                        </span>
-                                        <span style={{ fontSize: 12, color: "#6b7280" }}>
-                                            {item.time}
-                                        </span>
-                                    </div>
-                                }
-                                description={
-                                    <div>
-                                        <div style={{ fontWeight: item.unread ? 600 : 400, marginBottom: 4 }}>
-                                            {item.subject}
+                                    }
+                                    title={
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                            <span style={{ fontWeight: 500 }}>
+                                                {item.name}
+                                            </span>
+                                            <span style={{ fontSize: 12, color: "#6b7280" }}>
+                                                {formatDate(item.created_at)}
+                                            </span>
                                         </div>
-                                        <div style={{ color: "#6b7280" }}>{item.preview}</div>
-                                    </div>
-                                }
-                            />
-                        </List.Item>
-                    )}
-                />
+                                    }
+                                    description={
+                                        <div>
+                                            <div style={{ marginBottom: 4, color: "#1e5a8e" }}>
+                                                {item.email}
+                                            </div>
+                                            <div style={{ fontWeight: 500, marginBottom: 4 }}>
+                                                {item.subject || 'No Subject'}
+                                            </div>
+                                            <div style={{ color: "#6b7280" }}>
+                                                {item.message ? item.message.substring(0, 100) + (item.message.length > 100 ? '...' : '') : ''}
+                                            </div>
+                                        </div>
+                                    }
+                                />
+                            </List.Item>
+                        )}
+                    />
+                )}
             </Card>
 
             <Modal
                 title={null}
                 open={isDetailOpen}
                 onCancel={handleCloseDetail}
-                footer={null}
+                footer={[
+                    <Space key="actions">
+                        <Popconfirm
+                            title="Delete this message?"
+                            description="This action cannot be undone."
+                            onConfirm={() => {
+                                handleDelete(selectedMessage.id);
+                                handleCloseDetail();
+                            }}
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Button danger icon={<DeleteOutlined />}>
+                                Delete
+                            </Button>
+                        </Popconfirm>
+                        <Button onClick={handleCloseDetail}>
+                            Close
+                        </Button>
+                    </Space>
+                ]}
                 width={700}
                 closeIcon={<CloseOutlined />}
             >
@@ -142,15 +211,17 @@ export const MessageList = () => {
                             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                                 <Avatar icon={<UserOutlined />} size={48} />
                                 <div style={{ flex: 1 }}>
-                                    <Title level={5} style={{ margin: 0 }}>{selectedMessage.sender}</Title>
-                                    <Text type="secondary" style={{ fontSize: 12 }}>{selectedMessage.time}</Text>
+                                    <Title level={5} style={{ margin: 0 }}>{selectedMessage.name}</Title>
+                                    <Text type="secondary" style={{ fontSize: 12 }}>{selectedMessage.email}</Text>
+                                    <br />
+                                    <Text type="secondary" style={{ fontSize: 12 }}>{formatDate(selectedMessage.created_at)}</Text>
                                 </div>
                             </div>
-                            <Title level={4} style={{ margin: 0 }}>{selectedMessage.subject}</Title>
+                            <Title level={4} style={{ margin: 0 }}>{selectedMessage.subject || 'No Subject'}</Title>
                         </div>
 
                         <div style={{ marginBottom: 24, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
-                            {selectedMessage.fullMessage}
+                            {selectedMessage.message}
                         </div>
                     </div>
                 )}

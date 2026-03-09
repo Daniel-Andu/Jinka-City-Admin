@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Card, Form, Input, Button, Switch, Select, Space, Avatar, Upload, message } from "antd";
+import { useState, useEffect } from "react";
+import { Card, Form, Input, Button, Switch, Select, Space, Avatar, Upload, message, Spin } from "antd";
 import {
     UserOutlined,
     LockOutlined,
@@ -8,10 +8,14 @@ import {
     SaveOutlined,
     CameraOutlined,
 } from "@ant-design/icons";
+import { settingsService } from "../../services";
 
 export const SettingsPage = () => {
     const [form] = Form.useForm();
     const [profileImage, setProfileImage] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [siteSettings, setSiteSettings] = useState(null);
+    const [settingsForm] = Form.useForm();
 
     useEffect(() => {
         // Load profile image from localStorage
@@ -19,11 +23,47 @@ export const SettingsPage = () => {
         if (savedImage) {
             setProfileImage(savedImage);
         }
+
+        // Load site settings from backend
+        fetchSettings();
     }, []);
 
+    const fetchSettings = async () => {
+        setLoading(true);
+        try {
+            const response = await settingsService.getAll();
+            console.log('Settings from backend:', response);
+            const settings = response.data?.[0] || response[0];
+            if (settings) {
+                setSiteSettings(settings);
+                settingsForm.setFieldsValue(settings);
+            }
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+            message.error('Failed to load settings');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const onFinish = (values) => {
-        console.log("Settings saved:", values);
-        message.success("Settings saved successfully!");
+        console.log("Profile settings saved:", values);
+        message.success("Profile settings saved successfully!");
+    };
+
+    const handleSiteSettingsSubmit = async (values) => {
+        try {
+            const data = {
+                id: siteSettings?.id || 1,
+                ...values
+            };
+            await settingsService.update(data);
+            message.success("Site settings updated successfully!");
+            fetchSettings();
+        } catch (error) {
+            console.error('Error updating settings:', error);
+            message.error('Failed to update settings');
+        }
     };
 
     const handleImageUpload = (info) => {
@@ -68,7 +108,56 @@ export const SettingsPage = () => {
                 <h1>Settings</h1>
             </div>
 
-            <Card bordered={false} style={{ borderRadius: 12, marginBottom: 24 }}>
+            {/* Site Settings */}
+            <Card style={{ borderRadius: 12, marginBottom: 24 }}>
+                <h3 style={{ marginBottom: 24 }}>
+                    <GlobalOutlined /> Site Settings
+                </h3>
+
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                        <Spin size="large" />
+                    </div>
+                ) : (
+                    <Form form={settingsForm} layout="vertical" onFinish={handleSiteSettingsSubmit}>
+                        <Form.Item label="Site Name" name="site_name">
+                            <Input size="large" placeholder="Jinka City Administration" />
+                        </Form.Item>
+                        <Form.Item label="Logo URL" name="logo">
+                            <Input size="large" placeholder="https://example.com/logo.png" />
+                        </Form.Item>
+                        <Form.Item label="Favicon URL" name="favicon">
+                            <Input size="large" placeholder="https://example.com/favicon.ico" />
+                        </Form.Item>
+                        <Form.Item label="Address" name="address">
+                            <Input.TextArea rows={2} placeholder="City address" />
+                        </Form.Item>
+                        <Form.Item label="Phone" name="phone">
+                            <Input size="large" placeholder="+251-467-775-XXXX" />
+                        </Form.Item>
+                        <Form.Item label="Email" name="email">
+                            <Input size="large" placeholder="info@jinkacity.gov.et" />
+                        </Form.Item>
+                        <Form.Item label="Facebook URL" name="facebook">
+                            <Input size="large" placeholder="https://facebook.com/jinkacity" />
+                        </Form.Item>
+                        <Form.Item label="Twitter URL" name="twitter">
+                            <Input size="large" placeholder="https://twitter.com/jinkacity" />
+                        </Form.Item>
+                        <Form.Item label="YouTube URL" name="youtube">
+                            <Input size="large" placeholder="https://youtube.com/@jinkacity" />
+                        </Form.Item>
+                        <Form.Item>
+                            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} size="large">
+                                Save Site Settings
+                            </Button>
+                        </Form.Item>
+                    </Form>
+                )}
+            </Card>
+
+            {/* Profile Settings */}
+            <Card style={{ borderRadius: 12, marginBottom: 24 }}>
                 <h3 style={{ marginBottom: 24 }}>
                     <UserOutlined /> Profile Settings
                 </h3>
@@ -101,7 +190,7 @@ export const SettingsPage = () => {
                     <Form.Item label="Full Name" name="fullName" initialValue="Admin User">
                         <Input size="large" />
                     </Form.Item>
-                    <Form.Item label="Email" name="email" initialValue="admin@jinka.gov.et">
+                    <Form.Item label="Email" name="email" initialValue="admin@jinkacity.gov.et">
                         <Input size="large" />
                     </Form.Item>
                     <Form.Item label="Phone" name="phone" initialValue="+251-467-775-XXXX">
@@ -116,10 +205,16 @@ export const SettingsPage = () => {
                             <Select.Option value="finance">Finance</Select.Option>
                         </Select>
                     </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" icon={<SaveOutlined />} size="large">
+                            Save Profile
+                        </Button>
+                    </Form.Item>
                 </Form>
             </Card>
 
-            <Card bordered={false} style={{ borderRadius: 12, marginBottom: 24 }}>
+            {/* Security Settings */}
+            <Card style={{ borderRadius: 12, marginBottom: 24 }}>
                 <h3 style={{ marginBottom: 16 }}>
                     <LockOutlined /> Security Settings
                 </h3>
@@ -139,7 +234,8 @@ export const SettingsPage = () => {
                 </Form>
             </Card>
 
-            <Card bordered={false} style={{ borderRadius: 12, marginBottom: 24 }}>
+            {/* Notification Settings */}
+            <Card style={{ borderRadius: 12, marginBottom: 24 }}>
                 <h3 style={{ marginBottom: 16 }}>
                     <BellOutlined /> Notification Settings
                 </h3>
@@ -174,7 +270,8 @@ export const SettingsPage = () => {
                 </Space>
             </Card>
 
-            <Card bordered={false} style={{ borderRadius: 12, marginBottom: 24 }}>
+            {/* System Settings */}
+            <Card style={{ borderRadius: 12, marginBottom: 24 }}>
                 <h3 style={{ marginBottom: 16 }}>
                     <GlobalOutlined /> System Settings
                 </h3>
@@ -201,15 +298,6 @@ export const SettingsPage = () => {
                     </Form.Item>
                 </Form>
             </Card>
-
-            <div style={{ textAlign: "right" }}>
-                <Space>
-                    <Button size="large">Cancel</Button>
-                    <Button type="primary" icon={<SaveOutlined />} size="large" onClick={() => form.submit()}>
-                        Save All Changes
-                    </Button>
-                </Space>
-            </div>
         </div>
     );
 };

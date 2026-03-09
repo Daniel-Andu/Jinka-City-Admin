@@ -121,16 +121,21 @@ export const ThemedLayoutV2 = ({ children }) => {
             key: "/announcements",
             icon: <NotificationOutlined />,
             label: t('menu.announcements'),
-            children: [
-                {
-                    key: "/announcements",
-                    label: t('announcements.title'),
-                },
-                {
-                    key: "/announcements/create",
-                    label: t('announcements.create'),
-                },
-            ],
+        },
+        {
+            key: "/hero-sliders",
+            icon: <FileTextOutlined />,
+            label: "Hero Sliders",
+        },
+        {
+            key: "/city-stats",
+            icon: <BarChartOutlined />,
+            label: "City Stats",
+        },
+        {
+            key: "/city-services",
+            icon: <TeamOutlined />,
+            label: "City Services",
         },
         {
             key: "/projects",
@@ -156,6 +161,16 @@ export const ThemedLayoutV2 = ({ children }) => {
             key: "/messages",
             icon: <MessageOutlined />,
             label: t('menu.messages'),
+        },
+        {
+            key: "/languages",
+            icon: <GlobalOutlined />,
+            label: "Languages",
+        },
+        {
+            key: "/subscribers",
+            icon: <TeamOutlined />,
+            label: "Subscribers",
         },
         {
             key: "/settings",

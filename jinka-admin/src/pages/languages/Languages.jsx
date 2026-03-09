@@ -1,125 +1,126 @@
-import React, { useState, useEffect } from "react";
-import { Table, Space, Button, Tag, Input, Card, Avatar, message, Modal, Form, Select, Spin } from "antd";
+import { useState, useEffect } from "react";
+import { Table, Space, Button, Tag, Input, Card, message, Modal, Form, Switch } from "antd";
 import {
     EditOutlined,
     DeleteOutlined,
     SearchOutlined,
     PlusOutlined,
-    BankOutlined,
     ExclamationCircleOutlined,
+    GlobalOutlined,
 } from "@ant-design/icons";
-import { departmentService } from "../../services";
+import { languagesService } from "../../services";
 
 const { confirm } = Modal;
 
-export const DepartmentList = () => {
+export const LanguagesList = () => {
     const [searchText, setSearchText] = useState("");
-    const [departments, setDepartments] = useState([]);
+    const [languages, setLanguages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingDepartment, setEditingDepartment] = useState(null);
+    const [editingLanguage, setEditingLanguage] = useState(null);
     const [form] = Form.useForm();
 
-    // Fetch departments from backend
-    const fetchDepartments = async () => {
+    const fetchLanguages = async () => {
         setLoading(true);
         try {
-            const response = await departmentService.getAll();
-            console.log('Departments from backend:', response);
-            setDepartments(response.data || response || []);
-            message.success('Departments loaded from database');
+            const response = await languagesService.getAll();
+            console.log('Languages from backend:', response);
+            setLanguages(response.data || response || []);
+            message.success('Languages loaded from database');
         } catch (error) {
-            console.error('Error fetching departments:', error);
-            message.error('Failed to load departments from backend');
+            console.error('Error fetching languages:', error);
+            message.error('Failed to load languages');
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchDepartments();
+        fetchLanguages();
     }, []);
 
-    // Delete department
     const handleDelete = (record) => {
         confirm({
-            title: 'Are you sure you want to delete this department?',
+            title: 'Are you sure you want to delete this language?',
             icon: <ExclamationCircleOutlined />,
-            content: `Department: ${record.name || record.title}`,
+            content: `Language: ${record.name}`,
             okText: 'Yes, Delete',
             okType: 'danger',
             cancelText: 'Cancel',
             async onOk() {
                 try {
-                    await departmentService.delete(record.id);
-                    message.success('Department deleted successfully');
-                    fetchDepartments();
+                    await languagesService.delete(record.id);
+                    message.success('Language deleted successfully');
+                    fetchLanguages();
                 } catch (error) {
-                    console.error('Error deleting department:', error);
-                    message.error('Failed to delete department');
+                    console.error('Error deleting language:', error);
+                    message.error('Failed to delete language');
                 }
             },
         });
     };
 
-    // Open modal for create/edit
-    const openModal = (department = null) => {
-        setEditingDepartment(department);
-        if (department) {
-            form.setFieldsValue(department);
+    const openModal = (language = null) => {
+        setEditingLanguage(language);
+        if (language) {
+            form.setFieldsValue(language);
         } else {
             form.resetFields();
         }
         setIsModalOpen(true);
     };
 
-    // Handle form submit
     const handleSubmit = async (values) => {
         try {
-            // Convert boolean to number for MySQL
+            // Convert booleans to numbers for MySQL
             const data = {
                 ...values,
+                is_default: values.is_default ? 1 : 0,
                 is_active: values.is_active ? 1 : 0
             };
 
-            if (editingDepartment) {
-                await departmentService.update(editingDepartment.id, data);
-                message.success('Department updated successfully');
+            if (editingLanguage) {
+                await languagesService.update(editingLanguage.id, data);
+                message.success('Language updated successfully');
             } else {
-                await departmentService.create(data);
-                message.success('Department created successfully');
+                await languagesService.create(data);
+                message.success('Language created successfully');
             }
             setIsModalOpen(false);
             form.resetFields();
-            fetchDepartments();
+            fetchLanguages();
         } catch (error) {
-            console.error('Error saving department:', error);
-            message.error('Failed to save department');
+            console.error('Error saving language:', error);
+            message.error('Failed to save language');
         }
     };
 
     const columns = [
         {
-            title: "Department",
-            dataIndex: "name",
-            key: "name",
-            render: (text, record) => (
+            title: "Language",
+            key: "language",
+            render: (_, record) => (
                 <Space>
-                    <Avatar icon={<BankOutlined />} style={{ backgroundColor: record.color || '#1e5a8e' }} />
-                    <span>{text || record.title}</span>
+                    <GlobalOutlined style={{ fontSize: 20, color: '#1e5a8e' }} />
+                    <div>
+                        <div style={{ fontWeight: 500 }}>{record.name}</div>
+                        <div style={{ fontSize: 12, color: '#999' }}>{record.code}</div>
+                    </div>
                 </Space>
             ),
         },
         {
-            title: "Description",
-            dataIndex: "description",
-            key: "description",
-            ellipsis: true,
+            title: "Code",
+            dataIndex: "code",
+            key: "code",
         },
         {
-            title: "Icon",
-            dataIndex: "icon",
-            key: "icon",
+            title: "Default",
+            dataIndex: "is_default",
+            key: "is_default",
+            render: (is_default) => (
+                is_default ? <Tag color="blue">Default</Tag> : '-'
+            ),
         },
         {
             title: "Status",
@@ -146,30 +147,31 @@ export const DepartmentList = () => {
                         danger
                         icon={<DeleteOutlined />}
                         onClick={() => handleDelete(record)}
+                        disabled={record.is_default}
                     />
                 </Space>
             ),
         },
     ];
 
-    const filteredData = departments.filter(item =>
-        (item.name || item.title || '').toLowerCase().includes(searchText.toLowerCase()) ||
-        (item.description || '').toLowerCase().includes(searchText.toLowerCase())
+    const filteredData = languages.filter(item =>
+        (item.name || '').toLowerCase().includes(searchText.toLowerCase()) ||
+        (item.code || '').toLowerCase().includes(searchText.toLowerCase())
     );
 
     return (
         <div>
             <div className="page-header">
-                <h1>Departments</h1>
+                <h1>Languages</h1>
                 <p style={{ color: '#666', marginTop: 8 }}>
-                    {loading ? 'Loading...' : `Connected to backend database (${departments.length} departments)`}
+                    {loading ? 'Loading...' : `Manage system languages (${languages.length} languages)`}
                 </p>
             </div>
 
-            <Card bordered={false} style={{ borderRadius: 12 }}>
+            <Card style={{ borderRadius: 12 }}>
                 <Space style={{ marginBottom: 16, width: "100%", justifyContent: "space-between" }}>
                     <Input
-                        placeholder="Search departments..."
+                        placeholder="Search languages..."
                         prefix={<SearchOutlined />}
                         style={{ width: 300 }}
                         value={searchText}
@@ -181,7 +183,7 @@ export const DepartmentList = () => {
                         icon={<PlusOutlined />}
                         onClick={() => openModal()}
                     >
-                        Add Department
+                        Add Language
                     </Button>
                 </Space>
 
@@ -192,57 +194,57 @@ export const DepartmentList = () => {
                     loading={loading}
                     pagination={{
                         pageSize: 10,
-                        showTotal: (total) => `Total ${total} departments`,
+                        showTotal: (total) => `Total ${total} languages`,
                     }}
                 />
             </Card>
 
             <Modal
-                title={editingDepartment ? "Edit Department" : "Create Department"}
+                title={editingLanguage ? "Edit Language" : "Create Language"}
                 open={isModalOpen}
                 onCancel={() => {
                     setIsModalOpen(false);
                     form.resetFields();
                 }}
                 footer={null}
+                width={600}
             >
                 <Form
                     form={form}
                     layout="vertical"
                     onFinish={handleSubmit}
-                    initialValues={{ is_active: true }}
+                    initialValues={{ is_active: true, is_default: false }}
                 >
                     <Form.Item
                         name="name"
-                        label="Department Name"
-                        rules={[{ required: true, message: 'Please enter department name' }]}
+                        label="Language Name"
+                        rules={[{ required: true, message: 'Please enter language name' }]}
                     >
-                        <Input placeholder="e.g., Civil Registry" />
+                        <Input placeholder="e.g., English, አማርኛ" />
                     </Form.Item>
 
                     <Form.Item
-                        name="description"
-                        label="Description"
+                        name="code"
+                        label="Language Code"
+                        rules={[{ required: true, message: 'Please enter language code' }]}
                     >
-                        <Input.TextArea rows={3} placeholder="Department description" />
+                        <Input placeholder="e.g., en, am" maxLength={10} />
                     </Form.Item>
 
                     <Form.Item
-                        name="icon"
-                        label="Icon"
+                        name="is_default"
+                        label="Set as Default"
+                        valuePropName="checked"
                     >
-                        <Input placeholder="Icon name (e.g., BankOutlined)" />
+                        <Switch />
                     </Form.Item>
 
                     <Form.Item
                         name="is_active"
-                        label="Status"
+                        label="Active"
                         valuePropName="checked"
                     >
-                        <Select>
-                            <Select.Option value={true}>Active</Select.Option>
-                            <Select.Option value={false}>Inactive</Select.Option>
-                        </Select>
+                        <Switch />
                     </Form.Item>
 
                     <Form.Item>
@@ -254,38 +256,12 @@ export const DepartmentList = () => {
                                 Cancel
                             </Button>
                             <Button type="primary" htmlType="submit">
-                                {editingDepartment ? 'Update' : 'Create'}
+                                {editingLanguage ? 'Update' : 'Create'}
                             </Button>
                         </Space>
                     </Form.Item>
                 </Form>
             </Modal>
-        </div>
-    );
-};
-
-export const DepartmentCreate = () => {
-    return (
-        <div>
-            <div className="page-header">
-                <h1>Create New Department</h1>
-            </div>
-            <Card bordered={false} style={{ borderRadius: 12 }}>
-                <p>Department creation form will be connected to your API</p>
-            </Card>
-        </div>
-    );
-};
-
-export const DepartmentEdit = () => {
-    return (
-        <div>
-            <div className="page-header">
-                <h1>Edit Department</h1>
-            </div>
-            <Card bordered={false} style={{ borderRadius: 12 }}>
-                <p>Department edit form will be connected to your API</p>
-            </Card>
         </div>
     );
 };
