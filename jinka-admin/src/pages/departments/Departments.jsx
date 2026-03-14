@@ -25,12 +25,11 @@ export const DepartmentList = () => {
         setLoading(true);
         try {
             const response = await departmentService.getAll();
-            console.log('Departments from backend:', response);
             setDepartments(response.data || response || []);
-            message.success('Departments loaded from database');
         } catch (error) {
             console.error('Error fetching departments:', error);
-            message.error('Failed to load departments from backend');
+            const msg = error?.response?.data?.message || error?.message || 'Failed to load departments from backend';
+            message.error(msg);
         } finally {
             setLoading(false);
         }
@@ -75,12 +74,19 @@ export const DepartmentList = () => {
 
     // Handle form submit
     const handleSubmit = async (values) => {
+        const cleanPayload = (payload) =>
+            Object.entries(payload).reduce((acc, [key, value]) => {
+                if (value === undefined || value === null) return acc;
+                if (typeof value === 'string' && value.trim() === '') return acc;
+                acc[key] = value;
+                return acc;
+            }, {});
+
         try {
-            // Convert boolean to number for MySQL
-            const data = {
+            const data = cleanPayload({
                 ...values,
-                is_active: values.is_active ? 1 : 0
-            };
+                is_active: !!values.is_active,
+            });
 
             if (editingDepartment) {
                 await departmentService.update(editingDepartment.id, data);
@@ -94,7 +100,15 @@ export const DepartmentList = () => {
             fetchDepartments();
         } catch (error) {
             console.error('Error saving department:', error);
-            message.error('Failed to save department');
+            const responseData = error?.response?.data;
+            const msgFromData = responseData?.message || responseData;
+            const msg =
+                (typeof msgFromData === 'string'
+                    ? msgFromData
+                    : JSON.stringify(msgFromData)) ||
+                error?.message ||
+                'Failed to save department';
+            message.error(msg);
         }
     };
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Table, Space, Button, Tag, Input, Card, message, Modal, Form, Switch, Image, Upload } from "antd";
+import { Table, Space, Button, Tag, Input, Card, message, Modal, Form, Switch, Image, Upload, InputNumber } from "antd";
 import {
     EditOutlined,
     DeleteOutlined,
@@ -9,9 +9,12 @@ import {
     PictureOutlined,
     UploadOutlined,
 } from "@ant-design/icons";
-import { heroSliderService, uploadService } from "../../services";
+import { heroSliderService } from "../../services";
 
 const { confirm } = Modal;
+
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 export const HeroSliderList = () => {
     const [searchText, setSearchText] = useState("");
@@ -27,12 +30,11 @@ export const HeroSliderList = () => {
         setLoading(true);
         try {
             const response = await heroSliderService.getAll();
-            console.log('Hero sliders from backend:', response);
             setSliders(response.data || response || []);
-            message.success('Hero sliders loaded from database');
         } catch (error) {
             console.error('Error fetching hero sliders:', error);
-            message.error('Failed to load hero sliders');
+            const msg = error?.response?.data?.message || error?.message || 'Failed to load hero sliders';
+            message.error(msg);
         } finally {
             setLoading(false);
         }
@@ -76,14 +78,33 @@ export const HeroSliderList = () => {
     };
 
     const handleImageUpload = async (file) => {
+        if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+            message.error("Cloudinary is not configured. Set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET.");
+            return false;
+        }
         try {
             setUploading(true);
-            const response = await uploadService.upload(file, 'hero-sliders');
-            const uploadedUrl = `http://localhost:5001/${response.filePath}`;
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+            formData.append("folder", "jinka-admin/hero-sliders");
+
+            const res = await fetch(
+                `https://api.cloudinary.com/v1_1/${encodeURIComponent(CLOUDINARY_CLOUD_NAME)}/image/upload`,
+                { method: "POST", body: formData }
+            );
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(errText || "Cloudinary upload failed");
+            }
+            const json = await res.json();
+            const uploadedUrl = json.secure_url || json.url;
+            if (!uploadedUrl) throw new Error("Cloudinary did not return an image URL");
+
             setImageUrl(uploadedUrl);
             form.setFieldsValue({ image: uploadedUrl });
-            message.success('Image uploaded successfully');
-            return false; // Prevent default upload behavior
+            message.success("Image uploaded (Cloudinary)");
+            return false;
         } catch (error) {
             console.error('Error uploading image:', error);
             message.error('Failed to upload image');
@@ -93,13 +114,21 @@ export const HeroSliderList = () => {
         }
     };
 
+    const cleanPayload = (payload) => {
+        return Object.entries(payload).reduce((acc, [key, value]) => {
+            if (value === undefined || value === null) return acc;
+            if (typeof value === 'string' && value.trim() === '') return acc;
+            acc[key] = value;
+            return acc;
+        }, {});
+    };
+
     const handleSubmit = async (values) => {
         try {
-            // Convert boolean to number for MySQL
-            const data = {
+            const data = cleanPayload({
                 ...values,
-                is_active: values.is_active ? 1 : 0
-            };
+                is_active: !!values.is_active,
+            });
 
             if (editingSlider) {
                 await heroSliderService.update(editingSlider.id, data);
@@ -113,7 +142,15 @@ export const HeroSliderList = () => {
             fetchSliders();
         } catch (error) {
             console.error('Error saving hero slider:', error);
-            message.error('Failed to save hero slider');
+            const responseData = error?.response?.data;
+            const msgFromData = responseData?.message || responseData;
+            const msg =
+                (typeof msgFromData === 'string'
+                    ? msgFromData
+                    : JSON.stringify(msgFromData)) ||
+                error?.message ||
+                'Failed to save hero slider';
+            message.error(msg);
         }
     };
 
@@ -147,6 +184,13 @@ export const HeroSliderList = () => {
             title: "Title",
             dataIndex: "title",
             key: "title",
+        },
+        {
+            title: "Order",
+            dataIndex: "order_number",
+            key: "order_number",
+            width: 90,
+            sorter: (a, b) => (a.order_number || 0) - (b.order_number || 0),
         },
         {
             title: "Subtitle",
@@ -256,7 +300,7 @@ export const HeroSliderList = () => {
                     form={form}
                     layout="vertical"
                     onFinish={handleSubmit}
-                    initialValues={{ is_active: true }}
+                    initialValues={{ is_active: true, order_number: 0 }}
                 >
                     <Form.Item
                         name="title"
@@ -274,14 +318,41 @@ export const HeroSliderList = () => {
                     </Form.Item>
 
                     <Form.Item
-                        name="image"
-                        label="Image URL"
-                        rules={[{ required: true, message: 'Please enter image URL' }]}
+                        name="order_number"
+                        label="Display Order"
                     >
-                        <Input
-                            placeholder="https://example.com/image.jpg"
-                            onChange={(e) => setImageUrl(e.target.value)}
-                        />
+                        <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="image"
+                        label="Hero Image"
+                        rules={[{ required: true, message: 'Please upload or paste an image URL' }]}
+                    >
+                        <Space direction="vertical" style={{ width: "100%" }}>
+                            <Upload
+                                accept="image/*"
+                                showUploadList={false}
+                                beforeUpload={handleImageUpload}
+                            >
+                                <Button
+                                    icon={<UploadOutlined />}
+                                    loading={uploading}
+                                    style={{ width: "100%" }}
+                                >
+                                    Upload Image (Cloudinary)
+                                </Button>
+                            </Upload>
+                            <Input
+                                placeholder="Or paste an image URL (optional)"
+                                value={imageUrl}
+                                onChange={(e) => {
+                                    const v = e.target.value;
+                                    setImageUrl(v);
+                                    form.setFieldsValue({ image: v });
+                                }}
+                            />
+                        </Space>
                     </Form.Item>
 
                     {imageUrl && (

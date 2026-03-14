@@ -24,10 +24,10 @@ export const MessageList = () => {
             const response = await messageService.getAll();
             console.log('Messages from backend:', response);
             setMessages(response.data || response || []);
-            antMessage.success('Messages loaded from database');
         } catch (error) {
             console.error('Error fetching messages:', error);
-            antMessage.error('Failed to load messages from backend');
+            const msg = error?.response?.data?.message || error?.message || 'Failed to load messages from backend';
+            antMessage.error(msg);
         } finally {
             setLoading(false);
         }
@@ -45,7 +45,8 @@ export const MessageList = () => {
             fetchMessages();
         } catch (error) {
             console.error('Error deleting message:', error);
-            antMessage.error('Failed to delete message');
+            const msg = error?.response?.data?.message || error?.message || 'Failed to delete message';
+            antMessage.error(msg);
         }
     };
 

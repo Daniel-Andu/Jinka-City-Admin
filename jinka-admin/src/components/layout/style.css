@@ -1,7 +1,39 @@
 .custom-sider {
-    background: linear-gradient(180deg, #1e3a5f 0%, #1f2937 100%) !important;
-    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.2);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.16);
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .custom-sider {
+        position: fixed !important;
+        z-index: 1000;
+        height: 100vh;
+    }
+
+    .ant-layout-sider-collapsed {
+        width: 0 !important;
+        min-width: 0 !important;
+        max-width: 0 !important;
+    }
+
+    .logo-container {
+        padding: 16px 12px;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .logo-title {
+        font-size: 14px;
+    }
+
+    .logo-subtitle {
+        font-size: 10px;
+    }
 }
 
 .logo-container {
@@ -9,14 +41,14 @@
     align-items: center;
     gap: 12px;
     padding: 20px 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
     margin-bottom: 8px;
 }
 
 .logo-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #1e5a8e 0%, #0d9488 100%);
+    background: linear-gradient(135deg, var(--earth-brown) 0%, var(--primary) 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -63,10 +95,10 @@
 }
 
 .custom-menu .ant-menu-item-selected {
-    background: linear-gradient(135deg, #1e5a8e 0%, #0d9488 100%) !important;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
     color: white !important;
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(30, 90, 142, 0.3);
+    box-shadow: 0 2px 8px rgba(46, 139, 87, 0.25);
 }
 
 .custom-menu .ant-menu-item .anticon {
@@ -159,7 +191,7 @@
 .header-title {
     font-size: 16px;
     font-weight: 700;
-    background: linear-gradient(135deg, #1e5a8e 0%, #0d9488 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -184,7 +216,7 @@
 
 .trigger-btn:hover {
     background: #f3f4f6 !important;
-    color: #1e5a8e !important;
+    color: #2E8B57 !important;
 }
 
 .header-contact {
@@ -197,7 +229,7 @@
 }
 
 .header-contact .anticon {
-    color: #1e5a8e;
+    color: #2E8B57;
     font-size: 16px;
 }
 
@@ -209,20 +241,20 @@
 
 .header-search {
     border-radius: 10px;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--border);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    background: white;
+    background: var(--surface);
     height: 40px;
 }
 
 .header-search:hover {
-    border-color: #d1d5db;
+    border-color: rgba(0, 0, 0, 0.12);
 }
 
 .header-search:focus,
 .header-search:focus-within {
-    border-color: #1e5a8e;
-    box-shadow: 0 0 0 3px rgba(30, 90, 142, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.16);
 }
 
 .header-btn {
@@ -230,26 +262,26 @@
     width: 44px;
     height: 44px;
     border-radius: 10px;
-    color: #374151;
+    color: var(--text);
     transition: all 0.2s;
-    background: white;
-    border: 2px solid #e5e7eb;
+    background: var(--surface);
+    border: 2px solid var(--border);
 }
 
 .header-btn:hover {
-    background: #f3f4f6 !important;
-    color: #1e5a8e !important;
-    border-color: #1e5a8e;
+    background: rgba(46, 139, 87, 0.1) !important;
+    color: var(--primary) !important;
+    border-color: var(--primary);
 }
 
 .language-btn {
     height: 44px;
     padding: 0 16px;
     border-radius: 10px;
-    color: #374151;
+    color: var(--text);
     transition: all 0.2s;
-    background: white;
-    border: 2px solid #e5e7eb;
+    background: var(--surface);
+    border: 2px solid var(--border);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -258,9 +290,9 @@
 }
 
 .language-btn:hover {
-    background: #f3f4f6 !important;
-    color: #1e5a8e !important;
-    border-color: #1e5a8e;
+    background: rgba(46, 139, 87, 0.1) !important;
+    color: var(--primary) !important;
+    border-color: var(--primary);
 }
 
 .language-btn .anticon {
@@ -289,7 +321,17 @@
 
 .user-dropdown:hover {
     background: #f3f4f6;
-    border-color: #1e5a8e;
+    border-color: #2E8B57;
+}
+
+@media (max-width: 576px) {
+    .header-right {
+        gap: 10px;
+    }
+
+    .language-btn {
+        padding: 0 12px;
+    }
 }
 
 .user-dropdown-info {
@@ -315,7 +357,7 @@
 
 .custom-content {
     padding: 32px;
-    background: #f9fafb;
+    background: var(--surface-alt);
     min-height: calc(100vh - 80px);
 }
 
@@ -348,6 +390,14 @@
         min-height: calc(100vh - 64px);
     }
 
+    .sidebar-footer {
+        width: 100%;
+        left: 0;
+        padding: 16px;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+        background: linear-gradient(180deg, rgba(46, 139, 87, 0.95) 0%, rgba(60, 179, 113, 0.95) 100%);
+    }
+
     .trigger-btn {
         width: 40px;
         height: 40px;
@@ -358,5 +408,61 @@
         width: 40px;
         height: 40px;
         font-size: 18px;
+    }
+}
+
+@media (max-width: 576px) {
+    .custom-header {
+        padding: 0 12px;
+        height: 56px;
+    }
+
+    .custom-content {
+        padding: 12px;
+        min-height: calc(100vh - 56px);
+    }
+
+    .header-left {
+        gap: 12px;
+    }
+
+    .header-right {
+        gap: 8px;
+    }
+
+    .trigger-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    .logo-container {
+        padding: 12px 8px;
+        gap: 8px;
+    }
+
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .logo-title {
+        font-size: 13px;
+    }
+
+    .logo-subtitle {
+        display: none;
+    }
+
+    .custom-menu .ant-menu-item {
+        height: 40px;
+        line-height: 40px;
+        margin: 2px 4px;
+    }
+
+    .custom-menu .ant-menu-submenu-title {
+        height: 40px;
+        line-height: 40px;
+        margin: 2px 4px;
     }
 }

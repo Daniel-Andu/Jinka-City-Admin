@@ -25,10 +25,10 @@ export const CityStatsList = () => {
             const response = await cityStatsService.getAll();
             console.log('City stats from backend:', response);
             setStats(response.data || response || []);
-            message.success('City stats loaded from database');
         } catch (error) {
             console.error('Error fetching city stats:', error);
-            message.error('Failed to load city stats');
+            const msg = error?.response?.data?.message || error?.message || 'Failed to load city stats';
+            message.error(msg);
         } finally {
             setLoading(false);
         }
@@ -71,10 +71,10 @@ export const CityStatsList = () => {
 
     const handleSubmit = async (values) => {
         try {
-            // Convert boolean to number for MySQL
             const data = {
                 ...values,
-                is_active: values.is_active ? 1 : 0
+                is_active: !!values.is_active,
+                ...(editingStat ? { id: editingStat.id } : {}),
             };
 
             if (editingStat) {
@@ -89,7 +89,8 @@ export const CityStatsList = () => {
             fetchStats();
         } catch (error) {
             console.error('Error saving city stat:', error);
-            message.error('Failed to save city stat');
+            const msg = error?.response?.data?.message || error?.message || 'Failed to save city stat';
+            message.error(msg);
         }
     };
 

@@ -5,22 +5,39 @@ export const authService = {
     // Admin Login (uses public endpoint)
     login: async (email, password) => {
         const response = await api.post('/public/login', { email, password });
-        if (response.token) {
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('user', JSON.stringify(response.user));
+
+        // Some backends return: { token, user }
+        // Others return: { data: { token, user } }, or nested deeper.
+        const unwrap = (obj) => {
+            if (!obj || typeof obj !== 'object') return null;
+            if (obj.token) return obj;
+            if (obj.data) return unwrap(obj.data);
+            return null;
+        };
+
+        const payload = unwrap(response) || {};
+        const token = payload.token;
+        const user = payload.user;
+
+        if (token) {
+            localStorage.setItem('token', token);
+            if (user) {
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+            if (import.meta.env.VITE_DEBUG === 'true') {
+                // only show start of token for safety
+                console.debug('[Auth] Stored token', token.slice(0, 10) + '...');
+            }
         }
+
         return response;
     },
 
-    // Logout
+    // Logout (client-side only, backend does not expose a logout endpoint)
     logout: async () => {
-        try {
-            await api.post('/auth/logout');
-        } finally {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-        }
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
     },
 
     // Get current user

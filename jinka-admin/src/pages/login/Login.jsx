@@ -16,7 +16,6 @@ export const LoginPage = () => {
         try {
             console.log('Attempting login with:', values.email);
             const response = await authService.login(values.email, values.password);
-            console.log('Login response:', response);
 
             if (response && response.token) {
                 message.success('Login successful!');

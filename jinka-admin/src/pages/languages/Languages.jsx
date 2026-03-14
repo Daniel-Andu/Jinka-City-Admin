@@ -26,10 +26,10 @@ export const LanguagesList = () => {
             const response = await languagesService.getAll();
             console.log('Languages from backend:', response);
             setLanguages(response.data || response || []);
-            message.success('Languages loaded from database');
         } catch (error) {
             console.error('Error fetching languages:', error);
-            message.error('Failed to load languages');
+            const msg = error?.response?.data?.message || error?.message || 'Failed to load languages';
+            message.error(msg);
         } finally {
             setLoading(false);
         }
@@ -72,11 +72,11 @@ export const LanguagesList = () => {
 
     const handleSubmit = async (values) => {
         try {
-            // Convert booleans to numbers for MySQL
             const data = {
                 ...values,
-                is_default: values.is_default ? 1 : 0,
-                is_active: values.is_active ? 1 : 0
+                is_default: !!values.is_default,
+                is_active: !!values.is_active,
+                ...(editingLanguage ? { id: editingLanguage.id } : {}),
             };
 
             if (editingLanguage) {
@@ -91,7 +91,8 @@ export const LanguagesList = () => {
             fetchLanguages();
         } catch (error) {
             console.error('Error saving language:', error);
-            message.error('Failed to save language');
+            const msg = error?.response?.data?.message || error?.message || 'Failed to save language';
+            message.error(msg);
         }
     };
 

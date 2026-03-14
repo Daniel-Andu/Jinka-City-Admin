@@ -26,12 +26,11 @@ export const AnnouncementList = () => {
         setLoading(true);
         try {
             const response = await announcementService.getAll();
-            console.log('Announcements from backend:', response);
             setAnnouncements(response.data || response || []);
-            message.success('Announcements loaded from database');
         } catch (error) {
             console.error('Error fetching announcements:', error);
-            message.error('Failed to load announcements');
+            const msg = error?.response?.data?.message || error?.message || 'Failed to load announcements from backend';
+            message.error(msg);
         } finally {
             setLoading(false);
         }
@@ -57,7 +56,8 @@ export const AnnouncementList = () => {
                     fetchAnnouncements();
                 } catch (error) {
                     console.error('Error deleting announcement:', error);
-                    message.error('Failed to delete announcement');
+                    const msg = error?.response?.data?.message || error?.message || 'Failed to delete announcement';
+                    message.error(msg);
                 }
             },
         });
@@ -77,14 +77,24 @@ export const AnnouncementList = () => {
         setIsModalOpen(true);
     };
 
+    // Helper to remove null/empty fields before sending to backend
+    const cleanPayload = (payload) => {
+        return Object.entries(payload).reduce((acc, [key, value]) => {
+            if (value === undefined || value === null) return acc;
+            if (typeof value === 'string' && value.trim() === '') return acc;
+            acc[key] = value;
+            return acc;
+        }, {});
+    };
+
     // Handle form submit
     const handleSubmit = async (values) => {
         try {
-            const data = {
+            const data = cleanPayload({
                 ...values,
                 published_at: values.published_at ? values.published_at.format('YYYY-MM-DD HH:mm:ss') : null,
-                is_active: values.is_active ? 1 : 0, // Convert boolean to number for MySQL
-            };
+                is_active: !!values.is_active,
+            });
 
             if (editingAnnouncement) {
                 await announcementService.update(editingAnnouncement.id, data);
@@ -98,7 +108,15 @@ export const AnnouncementList = () => {
             fetchAnnouncements();
         } catch (error) {
             console.error('Error saving announcement:', error);
-            message.error('Failed to save announcement');
+            const responseData = error?.response?.data;
+            const msgFromData = responseData?.message || responseData;
+            const msg =
+                (typeof msgFromData === 'string'
+                    ? msgFromData
+                    : JSON.stringify(msgFromData)) ||
+                error?.message ||
+                'Failed to save announcement';
+            message.error(msg);
         }
     };
 

@@ -18,9 +18,14 @@ import {
     GlobalOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
+    TagOutlined,
+    TagsOutlined,
+    PictureOutlined,
+    LinkOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
+import { authService } from "../../services";
 import "./style.css";
 
 const { Header, Sider, Content } = Layout;
@@ -28,6 +33,7 @@ const { Text } = Typography;
 
 export const ThemedLayoutV2 = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const [notificationDrawer, setNotificationDrawer] = useState(false);
     const [notificationDetailModal, setNotificationDetailModal] = useState(false);
     const [selectedNotification, setSelectedNotification] = useState(null);
@@ -88,6 +94,28 @@ export const ThemedLayoutV2 = ({ children }) => {
             window.removeEventListener('profileImageUpdated', handleProfileImageUpdate);
         };
     }, []);
+
+    useEffect(() => {
+        const mql = window.matchMedia('(max-width: 768px)');
+        const handleResize = (event) => {
+            setIsMobile(event.matches);
+        };
+
+        // Initialize state
+        setIsMobile(mql.matches);
+
+        mql.addEventListener('change', handleResize);
+        return () => {
+            mql.removeEventListener('change', handleResize);
+        };
+    }, []);
+
+    useEffect(() => {
+        // Auto-collapse the sidebar on mobile for better usability
+        if (isMobile) {
+            setCollapsed(true);
+        }
+    }, [isMobile]);
 
     const changeLanguage = (lng) => {
         i18n.changeLanguage(lng);
@@ -173,6 +201,81 @@ export const ThemedLayoutV2 = ({ children }) => {
             label: "Subscribers",
         },
         {
+            key: "/news",
+            icon: <FileTextOutlined />,
+            label: "News",
+        },
+        {
+            key: "/news-categories",
+            icon: <TagOutlined />,
+            label: "News Categories",
+        },
+        {
+            key: "/news-tags",
+            icon: <TagsOutlined />,
+            label: "News Tags",
+        },
+        {
+            key: "/leaders",
+            icon: <UserOutlined />,
+            label: "Leaders",
+        },
+        {
+            key: "/ui-translations",
+            icon: <GlobalOutlined />,
+            label: "UI Translations",
+        },
+        {
+            key: "/page-hero-slides",
+            icon: <PictureOutlined />,
+            label: "Page Hero Slides",
+        },
+        {
+            key: "/department-translations",
+            icon: <GlobalOutlined />,
+            label: "Department Translations",
+        },
+        {
+            key: "/service-translations",
+            icon: <GlobalOutlined />,
+            label: "Service Translations",
+        },
+        {
+            key: "/news-translations",
+            icon: <GlobalOutlined />,
+            label: "News Translations",
+        },
+        {
+            key: "/news-category-translations",
+            icon: <GlobalOutlined />,
+            label: "News Category Translations",
+        },
+        {
+            key: "/news-tag-translations",
+            icon: <GlobalOutlined />,
+            label: "News Tag Translations",
+        },
+        {
+            key: "/news-category-map",
+            icon: <LinkOutlined />,
+            label: "News Category Map",
+        },
+        {
+            key: "/news-tag-map",
+            icon: <LinkOutlined />,
+            label: "News Tag Map",
+        },
+        {
+            key: "/media",
+            icon: <FileTextOutlined />,
+            label: "Media",
+        },
+        {
+            key: "/analytics",
+            icon: <BarChartOutlined />,
+            label: "Analytics",
+        },
+        {
             key: "/settings",
             icon: <SettingOutlined />,
             label: t('menu.settings'),
@@ -220,7 +323,7 @@ export const ThemedLayoutV2 = ({ children }) => {
 
     const handleUserMenuClick = ({ key }) => {
         if (key === "logout") {
-            navigate("/login");
+            authService.logout();
         } else if (key === "settings") {
             navigate("/settings");
         }
@@ -234,13 +337,19 @@ export const ThemedLayoutV2 = ({ children }) => {
         <Layout style={{ minHeight: "100vh" }}>
             <Sider
                 collapsible
+                trigger={null}
                 collapsed={collapsed}
                 onCollapse={setCollapsed}
                 width={260}
                 className="custom-sider"
-                breakpoint="lg"
-                collapsedWidth={80}
-                style={{ position: "relative", paddingBottom: collapsed ? 0 : 80 }}
+                breakpoint="md"
+                collapsedWidth={isMobile ? 0 : 80}
+                style={{
+                    position: isMobile ? "fixed" : "relative",
+                    height: isMobile ? "100vh" : "auto",
+                    paddingBottom: collapsed ? 0 : 80,
+                    zIndex: isMobile ? 1100 : "auto",
+                }}
             >
                 <div className="logo-container">
                     <div className="logo-icon">
@@ -257,7 +366,7 @@ export const ThemedLayoutV2 = ({ children }) => {
                 <Menu
                     theme="dark"
                     mode="inline"
-                    selectedKeys={[location.pathname]}
+                    selectedKeys={[`/${(location.pathname.split("/")[1] || "").trim()}`.replace("//", "/")]}
                     items={menuItems}
                     onClick={handleMenuClick}
                     className="custom-menu"
