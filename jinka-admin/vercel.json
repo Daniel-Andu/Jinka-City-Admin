@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "rootDirectory": "jinka-admin",
+  "buildCommand": "cd jinka-admin && npm run build",
+  "outputDirectory": "jinka-admin/dist",
+  "installCommand": "cd jinka-admin && npm install",
+  "framework": "vite",
+  "build": {
+    "env": {
+      "VITE_DEBUG": "true",
+      "VITE_CLOUDINARY_CLOUD_NAME": "do8jotiuq",
+      "VITE_ENV": "production",
+      "VITE_API_URL": "https://jinka-city-backend.onrender.com/api"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/jinka-admin/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}
