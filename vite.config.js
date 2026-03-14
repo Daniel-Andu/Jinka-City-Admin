@@ -33,7 +33,7 @@ export default defineConfig(({ mode }) => {
             'import.meta.env.VITE_DEBUG': JSON.stringify(env.VITE_DEBUG || 'false'),
             'import.meta.env.VITE_CLOUDINARY_CLOUD_NAME': JSON.stringify(env.VITE_CLOUDINARY_CLOUD_NAME || 'do8jotiuq'),
             'import.meta.env.VITE_ENV': JSON.stringify(env.VITE_ENV || 'development'),
-            'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || 'http://localhost:5001/api')
+            'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || 'https://jinka-city-backend.onrender.com')
         }
     }
 })

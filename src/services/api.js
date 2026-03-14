@@ -61,7 +61,7 @@ import axios from 'axios';
 
 // Get API URL from environment variables, with a fallback for local development.
 // If you want to point to a different backend (e.g., localhost), create a `.env` file with `VITE_API_URL`.
-const API_URL = import.meta.env.VITE_API_URL || 'https://jinka-city-backend.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://jinka-city-backend.onrender.com';
 
 const DEBUG = import.meta.env.VITE_DEBUG === 'true';
 
