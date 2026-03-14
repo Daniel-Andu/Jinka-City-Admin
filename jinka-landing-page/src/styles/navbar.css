@@ -1,0 +1,180 @@
+/* Navbar styles */
+
+.topbar {
+  background-color: #0d2559;
+  color: #e0e8f5;
+  padding: 0.45rem 0;
+  font-size: 0.82rem;
+}
+
+.topbar a {
+  color: #b8ccee;
+  transition: color 0.2s;
+}
+
+.topbar a:hover {
+  color: #ffffff;
+}
+
+.topbar-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.25);
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 10px;
+}
+
+.navbar {
+  background: url("jinkas-brand-color.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: 0 2px 12px rgba(26, 58, 107, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.navbar-logo-icon {
+  width: 46px;
+  height: 46px;
+  background: #1a3a6b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.navbar-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.navbar-logo-text .city-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a3a6b;
+  letter-spacing: 0.02em;
+}
+
+.navbar-logo-text .city-sub {
+  font-size: 0.7rem;
+  color: #5a6a8a;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.navbar-menu a {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1a2744;
+  padding: 0.5rem 0.75rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+  position: relative;
+  white-space: nowrap;
+}
+
+.navbar-menu a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: #e8a020;
+  transition: width 0.2s;
+}
+
+.navbar-menu a:hover {
+  color: #1a3a6b;
+}
+
+.navbar-menu a:hover::after,
+.navbar-menu a.active::after {
+  width: 60%;
+}
+
+.navbar-menu a.active {
+  color: #1a3a6b;
+}
+
+.navbar-search-btn {
+  background: none;
+  border: none;
+  color: #1a3a6b;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.navbar-search-btn:hover {
+  background: #eef2f9;
+}
+
+.navbar-mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #1a3a6b;
+  cursor: pointer;
+  padding: 0.4rem;
+}
+
+@media (max-width: 1100px) {
+  .navbar-menu {
+    display: none;
+  }
+  .navbar-mobile-toggle {
+    display: flex;
+    align-items: center;
+  }
+  .navbar-menu.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(26, 58, 107, 0.12);
+    padding: 1rem 0;
+    z-index: 999;
+    gap: 0;
+  }
+  .navbar-menu.open a {
+    padding: 0.75rem 2rem;
+    border-bottom: 1px solid #eef2f9;
+    width: 100%;
+  }
+}

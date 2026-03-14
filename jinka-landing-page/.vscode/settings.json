@@ -1,0 +1,21 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Enabled",
+                "ssl": {
+                    "ca": "/home/yohannes/Desktop/Jinka_Landing_page/isrgrootx1.pem"
+                }
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "gateway01.eu-central-1.prod.aws.tidbcloud.com",
+            "port": 4000,
+            "driver": "TiDB",
+            "name": "Jinka_tidb",
+            "username": "3Wqoqhx4joYsHuX.root",
+            "database": "test"
+        }
+    ]
+}

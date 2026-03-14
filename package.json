@@ -1,0 +1,14 @@
+{
+  "name": "jinka-city-monorepo",
+  "version": "1.0.0",
+  "description": "Jinka City Administration - Monorepo",
+  "private": true,
+  "scripts": {
+    "build": "cd jinka-admin && npm run build",
+    "dev": "cd jinka-admin && npm run dev",
+    "install": "cd jinka-admin && npm install"
+  },
+  "workspaces": [
+    "jinka-admin"
+  ]
+}

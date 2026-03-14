@@ -1,0 +1,172 @@
+/* Mayor section styles */
+
+.mayor-section {
+  padding: 5rem 2rem;
+  background: #ffffff;
+}
+
+.mayor-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.mayor-content {
+  order: 1;
+}
+
+.mayor-tag {
+  display: inline-block;
+  background: #eef2f9;
+  color: #1a3a6b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.3rem 0.9rem;
+  border-radius: 2px;
+  margin-bottom: 1rem;
+}
+
+.mayor-title {
+  color: #1a3a6b;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.mayor-name {
+  color: #e8a020;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  display: block;
+}
+
+.mayor-divider {
+  width: 50px;
+  height: 3px;
+  background: #e8a020;
+  margin-bottom: 1.5rem;
+}
+
+.mayor-message {
+  color: #4a5a78;
+  line-height: 1.85;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.mayor-message:last-of-type {
+  margin-bottom: 2rem;
+}
+
+.mayor-signature {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 2rem;
+}
+
+.mayor-signature-name {
+  font-weight: 700;
+  color: #1a2744;
+  font-size: 1rem;
+}
+
+.mayor-signature-title {
+  color: #5a6a8a;
+  font-size: 0.82rem;
+}
+
+.mayor-image-wrap {
+  order: 2;
+  position: relative;
+}
+
+.mayor-image-bg {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 80%;
+  height: 80%;
+  background: #eef2f9;
+  border-radius: 12px;
+  z-index: 0;
+}
+
+.mayor-image-accent {
+  position: absolute;
+  bottom: -15px;
+  left: -15px;
+  width: 60%;
+  height: 50%;
+  background: #1a3a6b;
+  border-radius: 10px;
+  z-index: 0;
+  opacity: 0.08;
+}
+
+.mayor-image {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(26, 58, 107, 0.18);
+}
+
+.mayor-badge {
+  position: absolute;
+  bottom: 24px;
+  left: -24px;
+  z-index: 2;
+  background: #1a3a6b;
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(26, 58, 107, 0.25);
+  min-width: 160px;
+}
+
+.mayor-badge-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.2rem;
+}
+
+.mayor-badge-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.mayor-badge-years {
+  font-size: 0.72rem;
+  color: #e8a020;
+  margin-top: 0.15rem;
+}
+
+@media (max-width: 900px) {
+  .mayor-inner {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .mayor-image-wrap {
+    order: -1;
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .mayor-badge {
+    left: 10px;
+    bottom: 10px;
+  }
+}
