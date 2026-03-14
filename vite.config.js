@@ -20,19 +20,13 @@ export default defineConfig(({ mode }) => {
                     manualChunks: {
                         vendor: ['react', 'react-dom'],
                         antd: ['antd', '@ant-design/icons'],
-                        refined: ['@refinedev/core', '@refinedev/antd', '@refinedev/react-router-v6'],
+                        refined: ['@refinedev/core', '@refinedev/react-router-v6'],
                         charts: ['recharts']
                     }
                 }
             },
             chunkSizeWarningLimit: 1000,
-            minify: 'terser',
-            terserOptions: {
-                compress: {
-                    drop_console: mode === 'production',
-                    drop_debugger: mode === 'production'
-                }
-            }
+            minify: 'terser'
         },
         define: {
             'process.env.NODE_ENV': JSON.stringify(env.NODE_ENV || mode),
