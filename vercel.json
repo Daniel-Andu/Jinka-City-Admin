@@ -1,9 +1,8 @@
 {
   "version": 2,
-  "rootDirectory": "jinka-admin",
-  "buildCommand": "cd jinka-admin && npm run build",
-  "outputDirectory": "jinka-admin/dist",
-  "installCommand": "cd jinka-admin && npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
   "framework": "vite",
   "build": {
     "env": {
@@ -16,7 +15,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/jinka-admin/index.html"
+      "destination": "/index.html"
     }
   ],
   "headers": [
