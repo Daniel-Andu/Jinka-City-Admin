@@ -107,12 +107,19 @@ export const CrudPage = ({
             cancelText: 'Cancel',
             async onOk() {
                 try {
-                    await service.delete(record[rowKey]);
+                    const deleteId = record[rowKey] || record.id;
+                    if (!deleteId) {
+                        message.error('Cannot delete: No ID found');
+                        return;
+                    }
+                    console.log('Deleting record with ID:', deleteId);
+                    await service.delete(deleteId);
                     message.success('Deleted successfully');
                     fetchData();
                 } catch (err) {
-                    console.error('Delete failed', err);
-                    message.error('Delete failed');
+                    console.error('Delete failed:', err);
+                    const errorMessage = err.response?.data?.message || err.message || 'Delete failed';
+                    message.error(errorMessage);
                 }
             },
         });
@@ -125,12 +132,12 @@ export const CrudPage = ({
             formFields.forEach((field) => {
                 if (field.type === 'date' && record[field.name]) {
                     initial[field.name] = dayjs(record[field.name]);
-                }
-                if (field.type === 'switch' && typeof record[field.name] === 'number') {
+                } else if (field.type === 'switch' && typeof record[field.name] === 'number') {
                     initial[field.name] = record[field.name] === 1;
-                }
-                if (field.type === 'number' && record[field.name] !== undefined) {
+                } else if (field.type === 'number' && record[field.name] !== undefined) {
                     initial[field.name] = Number(record[field.name]);
+                } else if (record[field.name] !== undefined) {
+                    initial[field.name] = record[field.name];
                 }
             });
             form.setFieldsValue(initial);

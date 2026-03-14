@@ -287,6 +287,7 @@ function App() {
                         >
                             <Routes>
                                 <Route path="/login" element={<LoginPage />} />
+                                <Route path="/" element={<Navigate to={authService.isAuthenticated() ? "/dashboard" : "/login"} replace />} />
                                 <Route element={<RequireAuth />}>
                                     <Route
                                         element={
